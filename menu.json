@@ -1,0 +1,34 @@
+[
+    {
+        "dish": "A",
+        "price": 1.00
+    },
+    {
+        "dish": "B",
+        "price": 2.00
+    },
+    {
+        "dish": "C",
+        "price": 3.00
+    },
+    {
+        "dish": "D",
+        "price": 4.50
+    },
+    {
+        "dish": "E",
+        "price": 5.00
+    },
+    {
+        "dish": "F",
+        "price": 6.50
+    },
+    {
+        "dish": "G",
+        "price": 7.00
+    },
+    {
+        "dish": "H",
+        "price": 8.00
+    }
+]
