@@ -18,7 +18,8 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sicksticky.pos"
+      "bundleIdentifier": "com.sicksticky.pos",
+      "buildNumber": "1.0.0"
     },
     "android": {
       "adaptiveIcon": {
