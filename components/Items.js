@@ -9,19 +9,88 @@ const Items = ({basket, setBasket}) => {
     // const menu = require('../menu')
     const [menu, setMenu] = useState()
     const [edit, setEdit] = useState(false)
-    const [modal, setModal] = useState(true)
+    const [modal, setModal] = useState(false)
     const [recipe, setRecipe] = useState()
     const [price, setPrice] = useState()
+    const [addType, setAddType] = useState()
+    const [setItems, addSetItems] = useState()
 
-    const addToBasket = (dish, price) => {
-        return(
-            setBasket([...basket, {"dish": dish, "price": price}])
+    const addFood = "增加菜式"
+    const addSet = "增加套餐"
+    const addDiscount = "增加折扣"
+
+    const modalContent = (type) => {
+        if(type != addSet){
+            return(
+            <View>
+                <View style={{ flexDirection: 'row', marginVertical: 30 }}>
+                    <Text style={styles.text}>{type == addFood ? "菜式" : "折扣"}名稱:</Text>
+                    <TextInput style={styles.input} value={recipe} onChangeText={setRecipe}></TextInput>
+                </View>
+                <View style={{ flexDirection: 'row' }}>
+                        <Text style={styles.text}>{type == addFood ? "價錢" : "折"}:</Text>
+                        <TextInput style={styles.input} keyboardType="numeric" value={price} onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}></TextInput>
+                </View>
+                {confirmCancel()}
+            </View>
+            )
+        }else{
+            return(
+                <View>
+                    <View style={{ flexDirection: 'row', marginVertical: 30 }}>
+                        <Text style={styles.text}>套餐名稱:</Text>
+                        <TextInput style={styles.input} value={recipe} onChangeText={setRecipe}></TextInput>
+                    </View>
+                    <View style={{ flexDirection: 'row', marginVertical: 30 }}>
+                        <Text style={styles.text}>套餐內容:</Text>
+                        <TextInput style={styles.input} value={setItems} onChangeText={addSetItems} multiline={true}></TextInput>
+                    </View>
+                    <View style={{ flexDirection: 'row' }}>
+                            <Text style={styles.text}>價錢:</Text>
+                            <TextInput style={styles.input} keyboardType="numeric" value={price} onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}></TextInput>
+                    </View>
+                    {confirmCancel()}
+                </View>
+            )
+        }
+    }
+
+    const confirmCancel = () => {
+        return (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 30 }}>
+                <TouchableOpacity style={styles.button} onPress={() => setModal(false)}>
+                    <Text style={styles.text}>取消</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={addRecipe}>
+                    <Text style={styles.text}>確認</Text>
+                </TouchableOpacity>
+            </View>
         )
+    }
+
+    const addToBasket = (dish, price, tag, setItems) => {
+        console.log(setItems)
+        if(setItems == null){
+            return(
+                setBasket([...basket, {"dish": dish, "price": price, "tag": tag}])
+            )
+        }
+        return setBasket([...basket, {"dish": dish, "price": price, "tag": tag, "setItems": setItems}])
     }
 
     const addRecipe = () => {
         firebaseSDK.addData(`/recipe/${recipe}`, {'name': recipe})
         firebaseSDK.update(`/recipe/${recipe}`, {'price': parseInt(price)})
+        if(addType == addFood){
+            firebaseSDK.update(`/recipe/${recipe}`, {'tag': "food"})
+        }
+        if(addType == addSet){
+            firebaseSDK.update(`/recipe/${recipe}`, {'tag': "set"})
+            firebaseSDK.update(`/recipe/${recipe}`, {'setItems' : setItems})
+        }
+        if(addType == addDiscount){
+            firebaseSDK.update(`/recipe/${recipe}`, {'tag': "discount"})
+        }
         setModal(false)
         setRecipe()
         setPrice()
@@ -43,35 +112,21 @@ const Items = ({basket, setBasket}) => {
                 <Modal isVisible={modal} hasBackdrop={true} onBackdropPress={() => setModal(false)} backdropOpacity={0.5}>
                 <KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={200}>
                     <View style={styles.modal}>
-                        <View style={{flexDirection: 'row'}}>
-                            <Text style={styles.text}>菜式名稱:</Text> 
-                            <TextInput style={styles.input} value={recipe} onChangeText={setRecipe}></TextInput>
-                        </View>
-                        <View style={{flexDirection: 'row', marginTop: 30}}>
-                            <Text style={styles.text}>價錢:</Text> 
-                            <TextInput style={styles.input} keyboardType="numeric" value={price} onChangeText={(text) => setPrice(text.replace(/[^0-9.]/g, ''))}></TextInput>
-                        </View>
-                        <View style={{flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 30}}>
-                            <TouchableOpacity style={styles.button} onPress={()=>setModal(false)}>
-                                <Text style={styles.text}>取消</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.button} onPress={addRecipe}>
-                                <Text style={styles.text}>確認</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <Text style={[styles.text, {textAlign: 'center'}]}>{addType}</Text>
+                        {modalContent(addType)}
                     </View>
                     </KeyboardAvoidingView>
                 </Modal>
 
                 <FlatList
                     data={menu}
-                    keyExtractor={item => item.dish}
+                    keyExtractor={(item, index) => index}
                     numColumns={4}
                     renderItem={ ({item}) => {
                         return(
-                            <TouchableOpacity style={styles.item} onPress={() => {addToBasket(item.name, item.price)}}>
+                            <TouchableOpacity style={styles.item} onPress={() => {addToBasket(item.name, item.price, item.tag, item.setItems)}}>
                                 <Text style={styles.text}>{item.name}</Text>
-                                <Text style={styles.text}>{item.price.toFixed(2)}</Text>
+                                <Text style={styles.text}>{item.tag == "discount" ? `${item.price}折`: item.price.toFixed(2)}</Text>
                                 {edit ?
                                     <TouchableOpacity style={styles.minus}>
                                         <AntDesign name="minuscircleo" size={20} color="black" />
@@ -90,14 +145,23 @@ const Items = ({basket, setBasket}) => {
                         <View >
                             {edit?            
                                 <View style={{flexDirection: 'row'}}> 
-                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>setModal(true)}>
-                                    <Text style={styles.text}>{"增加菜式"}</Text>
+                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>{
+                                    setAddType(addFood)
+                                    setModal(true)
+                                }}>
+                                    <Text style={styles.text}>{addFood}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>setModal(true)}>
-                                    <Text style={styles.text}>{"增加套餐"}</Text>
+                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>{
+                                    setAddType(addSet)
+                                    setModal(true)
+                                }}>
+                                    <Text style={styles.text}>{addSet}</Text>
                                 </TouchableOpacity>
-                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>setModal(true)}>
-                                    <Text style={styles.text}>{"增加折扣"}</Text>
+                                <TouchableOpacity style={[styles.item, {borderStyle: 'dashed'}]} onPress={()=>{
+                                    setAddType(addDiscount)
+                                    setModal(true)
+                                }}>
+                                    <Text style={styles.text}>{addDiscount}</Text>
                                 </TouchableOpacity>
                                 </View>
                             :

@@ -227,8 +227,12 @@ const record = () => {
                                     renderItem={ ({item}) => {
                                         return(
                                             <View style={styles.items}>
-                                                <Text style={styles.text}>{item.dish}</Text>
-                                                <Text style={styles.text}>{item.price.toFixed(2)}</Text>
+                                                <View>
+                                                <Text style={{fontSize: 30}}>{item.dish}</Text>
+                                                <Text style={{fontSize: 20, marginLeft: 40}}>{item.setItems}</Text>
+                                                </View>
+                                                <Text style={{fontSize: 30}}>{item.tag != 'discount' ? item.price.toFixed(2) : `${item.price}折`}</Text>
+
                                             </View>
                                         )
                                     }}

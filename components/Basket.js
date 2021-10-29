@@ -24,7 +24,14 @@ const Basket = ({basket, setBasket}) => {
     const getSubtotal = () =>{
         var subtotal = 0
         for (let i = 0; i < basket.length; i ++){
-            subtotal += basket[i].price
+            if(basket[i].tag != 'discount'){
+                subtotal += basket[i].price
+            }
+        }
+        for (let i = 0; i < basket.length; i ++){
+            if(basket[i].tag == 'discount'){
+                subtotal *= (basket[i].price / 10)
+            }
         }
         return subtotal
     }
@@ -100,11 +107,18 @@ const Basket = ({basket, setBasket}) => {
                     return(
                         <View style={styles.dish}>
                             <Text style={styles.text}>{item.dish}</Text>
+                            <Text>{item.tag}</Text>
                             {minus(index)}
                         </View>
                     )
                 }}
+                ListFooterComponent={
+                    <View>
+                    
+                    </View>
+                }
                 />
+
             </View>
             <View style={styles.subtotal}>
                 <Text style={styles.text}>總計:</Text>
